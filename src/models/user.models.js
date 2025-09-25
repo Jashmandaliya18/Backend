@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 
 const userSchema = new Schema({
-    username: {
+    userName: {
         type: String,
         required: true,
         unique: true,
@@ -18,7 +18,7 @@ const userSchema = new Schema({
         lowercase: true,
         trim: true,
     },
-    fullname: {
+    fullName: {
         type: String,
         required: true,
         trim: true,
@@ -53,7 +53,7 @@ const userSchema = new Schema({
 userSchema.pre("save", async function (next) {
     if (!this.isModfied("password")) return next(); // if not modified the password then return.
 
-    this.password = bcrypt.hash(this.password, 10) // encrypt tha passeord.
+    this.password = await bcrypt.hash(this.password, 10) // encrypt tha passeord.
     next();
 })
 
