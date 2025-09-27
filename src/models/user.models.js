@@ -33,7 +33,7 @@ const userSchema = new Schema({
     },
     watchHostiry: [
         {
-            type: mongoose.Schema.Types.ObjectId(),
+            type: mongoose.Schema.Types.ObjectId,
             ref: "Video"
         }
     ],
@@ -51,7 +51,7 @@ const userSchema = new Schema({
 
 
 userSchema.pre("save", async function (next) {
-    if (!this.isModfied("password")) return next(); // if not modified the password then return.
+    if (!this.isModified("password")) return next(); // if not modified the password then return.
 
     this.password = await bcrypt.hash(this.password, 10) // encrypt tha passeord.
     next();
