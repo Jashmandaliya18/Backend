@@ -78,4 +78,30 @@ const registerUser = asyncHandler(async (req, res) => {
 
 })
 
-export { registerUser };
+const loginUser = asyncHandler(async (req, res) => {
+    /* steps->
+    my->
+     take userName  or email from user
+     take password from user 
+     checkbox for access
+     if user have no account then asking for register user
+     if have account
+        -> compare email
+        -> compare password
+            > correct : log in that user and give access
+            > incorrect : show a error for incorrect passeord
+    chai->
+     req body -> data
+     username , email
+     find the user
+     passeword check
+     access and refresh token
+     send cookie
+
+    */
+
+})
+
+
+
+export { registerUser, loginUser };
