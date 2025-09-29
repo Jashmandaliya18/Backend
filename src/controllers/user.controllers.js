@@ -4,6 +4,25 @@ import { User } from "../models/user.models.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { Apiresponce } from "../utils/Apiresponce.js";
 
+// method for access and refresh token
+const generateAccessAndRefreshTokens = async (userId) => {
+    try {
+        const user = await User.findById(userId); // find that user by user_id
+        const accessToken = user.generateAccessToken() // generate access token by method
+        const refreshToken = user.generateRefreshToken() // generate refresh token by method
+
+        user.refreshToken = refreshToken; // add a refreshToken value in object
+        await user.save({ validateBeforeSave: false }); // save the data in database
+
+    } catch (error) {
+        throw new Apierror(500, "Something went wrong while generating Access and Refresh Token");
+    }
+
+    return { accessToken, refreshToken };
+}
+
+
+
 const registerUser = asyncHandler(async (req, res) => {
     // steps for register User ->
     // get user details from fronted
@@ -91,7 +110,7 @@ const loginUser = asyncHandler(async (req, res) => {
             > correct : log in that user and give access
             > incorrect : show a error for incorrect passeord
     chai->
-     req body -> data
+     req body -> data  
      username , email
      find the user
      passeword check
@@ -100,7 +119,48 @@ const loginUser = asyncHandler(async (req, res) => {
 
     */
 
+    const { email, userName, password } = req.body; // take a username or email and password
+
+    if (!userName || !email) { // check that username or email is empty or not
+        throw new Apierror(400, "username or email is requred")
+    }
+    const user = await User.findOne({ // find first instance from database based on username or email
+        $or: [{ userName, email }]
+    })
+    if (!user) {  // checking for user if available or not
+        throw new Apierror(404, "User does not exist");
+    }
+    const ispasswordValid = await user.isPassowordCorrect(password); // password validation
+    if (!ispasswordValid) {
+        throw new Apierror(404, " Invalid user credentials")
+    }
+
+    const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(user._id);
+
+    const loggedInUser = await User.findById(user._id).select("-password -refreshToken")
+
+    const options = { // it allowa modifiedable by server only not from fronted
+        httpOnly: true,
+        secure: true,
+    }
+
+    return res
+        .status(200)
+        .cookie("accesToken", accessToken, options)
+        .cookie("refreshToken", refreshToken, options)
+        .json(
+            new Apiresponce(
+                200,
+                {
+                    user: loggedInUser,
+                    accessToken,
+                    refreshToken,
+                },
+                "User Logged In Successfully"
+            )
+        )
 })
+
 
 
 
