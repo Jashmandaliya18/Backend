@@ -97,6 +97,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
 })
 
+
 const loginUser = asyncHandler(async (req, res) => {
     /* steps->
     my->
@@ -161,7 +162,38 @@ const loginUser = asyncHandler(async (req, res) => {
         )
 })
 
+const logOutUser = asyncHandler(async (req, res) => {
+    // first we need to reset a cookie 
+    // then reset the refresh_token of (user.model.js) so that means user log out.
+    // so we need to find a user from database like .findonebyid(userId), but we do not have id, so we use a concept of middleware for log out the user.
+    // make a middleware for it.
+
+    await User.findByIdAndUpdate(
+        req.user._id,
+        {
+            $set: {
+                refreshToken: undefined
+            }
+        },
+        {
+            new: true
+        }
+    )
+
+    const options = {
+        httpOnly: true,
+        secure: true,
+    }
+    return res
+        .status(200)
+        .clearCookie("accessToken", options)
+        .clearCookie("refreshToken", options)
+        .json(new Apiresponce(200, null, "User Logged Out Successfully"));
+    
+
+
+})
 
 
 
-export { registerUser, loginUser };
+export { registerUser, loginUser, logOutUser };
