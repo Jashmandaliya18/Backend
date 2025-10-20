@@ -21,6 +21,6 @@ router.route("/register").post(
 
 router.route("/login").post(loginUser)
 
-router.rpute("/logout").post(verifyJWT, logOutUser)
+router.route("/logout").post(verifyJWT, logOutUser)
 
-export default router;
+export default router; 

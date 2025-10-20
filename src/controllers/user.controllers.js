@@ -6,10 +6,11 @@ import { Apiresponce } from "../utils/Apiresponce.js";
 
 // method for access and refresh token
 const generateAccessAndRefreshTokens = async (userId) => {
+    let accessToken, refreshToken;
     try {
         const user = await User.findById(userId); // find that user by user_id
-        const accessToken = user.generateAccessToken() // generate access token by method
-        const refreshToken = user.generateRefreshToken() // generate refresh token by method
+        accessToken = user.generateAccessToken() // generate access token by method
+        refreshToken = user.generateRefreshToken() // generate refresh token by method
 
         user.refreshToken = refreshToken; // add a refreshToken value in object
         await user.save({ validateBeforeSave: false }); // save the data in database
@@ -90,6 +91,8 @@ const registerUser = asyncHandler(async (req, res) => {
     if (!createdUser) {
         throw new Apierror(500, "Something went wrong while registering Use");
     }
+    console.log("User Register Succefully !!!");
+
 
     return res.status(201).json(
         new Apiresponce(200, createdUser, "User registered Succefully")
@@ -121,17 +124,27 @@ const loginUser = asyncHandler(async (req, res) => {
     */
 
     const { email, userName, password } = req.body; // take a username or email and password
+    // console.log("Login req body: ", req.body);
 
-    if (!userName || !email) { // check that username or email is empty or not
-        throw new Apierror(400, "username or email is requred")
+    if (!(userName || email)) { // check that username or email is empty or not
+        throw new Apierror(400, "username or email is required")
     }
-    const user = await User.findOne({ // find first instance from database based on username or email
-        $or: [{ userName, email }]
-    })
+    // const user = await User.findOne({ // find first instance from database based on username or email
+    //     $or: [{ userName, email }]
+    // })
+    const user = await User.findOne({
+        $or: [
+            { userName: userName || "" },
+            { email: email || "" }
+        ]
+    });
+    // console.log("Found User: ", user);
     if (!user) {  // checking for user if available or not
         throw new Apierror(404, "User does not exist");
     }
-    const ispasswordValid = await user.isPassowordCorrect(password); // password validation
+    const ispasswordValid = await user.isPasswordCorrect(password); // password validation
+    // console.log("Password is Match", ispasswordValid);
+
     if (!ispasswordValid) {
         throw new Apierror(404, " Invalid user credentials")
     }
@@ -147,7 +160,7 @@ const loginUser = asyncHandler(async (req, res) => {
 
     return res
         .status(200)
-        .cookie("accesToken", accessToken, options)
+        .cookie("accessToken", accessToken, options)
         .cookie("refreshToken", refreshToken, options)
         .json(
             new Apiresponce(
@@ -189,7 +202,7 @@ const logOutUser = asyncHandler(async (req, res) => {
         .clearCookie("accessToken", options)
         .clearCookie("refreshToken", options)
         .json(new Apiresponce(200, null, "User Logged Out Successfully"));
-    
+
 
 
 })

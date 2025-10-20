@@ -1,12 +1,12 @@
-import { asyncHandler } from "../utils/asyncHandler";
+import { asyncHandler } from "../utils/asyncHandler.js";
 import { Apierror } from "../utils/Apierror.js";
 import jwt from "jsonwebtoken";
-import { User } from "../models/user.models";
+import { User } from "../models/user.models.js";
 
 
 export const verifyJWT = asyncHandler(async (req, _, next) => {
     try {
-        const token = req.cookies?.accesToken || req.header("Authorization")?.replace("Bearer ", "")
+        const token = req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer ", "")
         if (!token) {
             throw new Apierror(401, "You are not authorized to access this route")
         }
@@ -15,7 +15,7 @@ export const verifyJWT = asyncHandler(async (req, _, next) => {
         const user = await User.findById(decodedInfo?._id).select("-password -refreshToken")
 
         if (!user) {
-            throw new Apierror("401", "Invalid access tok")
+            throw new Apierror(401, "Invalid access token")
         }
 
         req.user = user;
