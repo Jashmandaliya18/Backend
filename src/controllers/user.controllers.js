@@ -378,10 +378,58 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
                 from: "subscription",
                 localField: "_id",
                 foreignField: "channel",
-                as: "Subscriber"
+                as: "Subscribers"
+            }
+        },
+        {
+            $lookup: {
+                from: "Subscription",
+                localField: "_id",
+                foreignField: "subscriber",
+                as: "SubscribedTo"
+            }
+        },
+        {
+            $addFields: {
+                SubscriberCount: {
+                    $size: "$Subscribers"
+                },
+                channelsSubscribedToCount: {
+                    $size: "$SubscribedTo"
+                },
+                isSubscribed: {
+                    $cond: {
+                        if: { $in: [req.user?._id, "Subscribers.subscriber"] },
+                        then: true,
+                        else: false
+                    }
+                }
+            }
+        },
+        {
+            $project: {
+                fullName: 1,
+                username: 1,
+                SubscriberCount: 1,
+                channelsSubscribedToCount: 1,
+                isSubscribed: 1,
+                avatar: 1,
+                coverImage: 1,
+                email: 1
             }
         }
     ])
+
+    console.log("Channel: ", channel);
+
+    if (!channel?.length) {
+        throw new Apierror(401, "Channel is not exist")
+    }
+
+    return res
+        .status(200)
+        .json(new Apiresponce(200, channel[0], "User Channel fetched successfully")
+    )
 })
 
 
@@ -394,5 +442,6 @@ export {
     getCurrentUser,
     updateAccountDetails,
     avatarUpdate,
-    coverImageUpdate
+    coverImageUpdate,
+    getUserChannelProfile
 }
