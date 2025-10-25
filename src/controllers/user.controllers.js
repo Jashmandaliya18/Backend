@@ -360,6 +360,31 @@ const coverImageUpdate = asyncHandler(async (req, res) => {
 })
 
 
+const getUserChannelProfile = asyncHandler(async (req, res) => {
+    const { username } = req.params;
+
+    if (!username?.trim) {
+        throw new Apierror(401, "Username is missing")
+    }
+
+    const channel = await User.aggregate([
+        {
+            $match: {
+                username: username?.toLowerCase()
+            }
+        },
+        {
+            $lookup: {
+                from: "subscription",
+                localField: "_id",
+                foreignField: "channel",
+                as: "Subscriber"
+            }
+        }
+    ])
+})
+
+
 export {
     registerUser,
     loginUser,
