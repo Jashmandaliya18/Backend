@@ -6,7 +6,6 @@ import { Apiresponce } from "../utils/Apiresponce.js";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
 
-// method for access and refresh token
 const generateAccessAndRefreshTokens = async (userId) => {
     let accessToken, refreshToken;
     try {
@@ -23,7 +22,6 @@ const generateAccessAndRefreshTokens = async (userId) => {
 
     return { accessToken, refreshToken };
 }
-
 
 const registerUser = asyncHandler(async (req, res) => {
     // steps for register User ->
@@ -100,7 +98,6 @@ const registerUser = asyncHandler(async (req, res) => {
     )
 
 })
-
 
 const loginUser = asyncHandler(async (req, res) => {
     /* steps->
@@ -479,9 +476,6 @@ const getWatchHistory = asyncHandler(async (req, res) => {
         .status(200)
         .json(new Apiresponce(200, user[0].watchHistory, "Watch History Fetched Succefully"))
 })
-
-
-
 
 export {
     registerUser,
