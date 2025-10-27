@@ -4,6 +4,7 @@ import { User } from "../models/user.models.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { Apiresponce } from "../utils/Apiresponce.js";
 import jwt from "jsonwebtoken";
+import mongoose from "mongoose";
 
 // method for access and refresh token
 const generateAccessAndRefreshTokens = async (userId) => {
@@ -359,14 +360,13 @@ const coverImageUpdate = asyncHandler(async (req, res) => {
         .json(new Apiresponce(200, user, "Cover Image updated succefully"))
 })
 
-
 const getUserChannelProfile = asyncHandler(async (req, res) => {
     const { username } = req.params;
 
     if (!username?.trim) {
         throw new Apierror(401, "Username is missing")
     }
-
+    // Aggregate pipelines
     const channel = await User.aggregate([
         {
             $match: {
@@ -429,8 +429,58 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
     return res
         .status(200)
         .json(new Apiresponce(200, channel[0], "User Channel fetched successfully")
-    )
+        )
 })
+
+const getWatchHistory = asyncHandler(async (req, res) => {
+    const user = await User.aggregate([
+        {
+            $match: {
+                _id: new mongoose.Types.ObjectId(req.user._id)
+            }
+        },
+        {
+            $lookup: {
+                from: "Video",
+                localField: "watchHistory",
+                foreignField: "_id",
+                as: "watchHistory",
+                pipeline: [
+                    {
+                        $lookup: {
+                            from: "User",
+                            localField: "owner",
+                            foreignField: "_id",
+                            as: "owner",
+                            pipeline: [
+                                {
+                                    $project: {
+                                        fullName: 1,
+                                        userName: 1,
+                                        avatar: 1
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        $addFields: {
+                            owner: {
+                                $first: "$owner"
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+    ])
+
+    return res
+        .status(200)
+        .json(new Apiresponce(200, user[0].watchHistory, "Watch History Fetched Succefully"))
+})
+
+
 
 
 export {
@@ -443,5 +493,6 @@ export {
     updateAccountDetails,
     avatarUpdate,
     coverImageUpdate,
-    getUserChannelProfile
+    getUserChannelProfile,
+    getWatchHistory
 }
