@@ -207,7 +207,7 @@ const logOutUser = asyncHandler(async (req, res) => {
 })
 
 const refreshAccessToken = asyncHandler(async (req, res) => {
-    const incomingRefreshToken = req.cookie?.refreshToken || req.body.refreshToken;
+    const incomingRefreshToken = req.cookie?.refreshToken || req.body?.refreshToken;
 
     if (!incomingRefreshToken) {
         throw new Apierror(401, "Unauthorized Request ");
@@ -268,7 +268,7 @@ const changeCurrentPassword = asyncHandler(async (req, res) => {
 })
 
 const getCurrentUser = asyncHandler(async (req, res) => {
-    return req
+    return res
         .status(200)
         .json(new Apiresponce(
             200,
