@@ -281,7 +281,7 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
     const { fullName, email } = req.body
 
     if (!fullName || !email) {
-        throw new Apierror(401, "Password and Email is required ")
+        throw new Apierror(401, "FullName and Email is required ")
     }
 
     const user = await User.findByIdAndUpdate(
@@ -360,14 +360,15 @@ const coverImageUpdate = asyncHandler(async (req, res) => {
 const getUserChannelProfile = asyncHandler(async (req, res) => {
     const { username } = req.params;
 
-    if (!username?.trim) {
+    if (!username?.trim()) {
         throw new Apierror(401, "Username is missing")
     }
     // Aggregate pipelines
     const channel = await User.aggregate([
         {
             $match: {
-                username: username?.toLowerCase()
+                // username: username?.toLowerCase()
+                userName: username?.toLowerCase()
             }
         },
         {
@@ -380,7 +381,7 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
         },
         {
             $lookup: {
-                from: "Subscription",
+                from: "subscription",
                 localField: "_id",
                 foreignField: "subscriber",
                 as: "SubscribedTo"
@@ -396,7 +397,7 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
                 },
                 isSubscribed: {
                     $cond: {
-                        if: { $in: [req.user?._id, "Subscribers.subscriber"] },
+                        if: { $in: [req.user?._id, "$Subscribers.subscriber"] },
                         then: true,
                         else: false
                     }
