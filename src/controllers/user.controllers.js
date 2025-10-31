@@ -475,7 +475,14 @@ const getWatchHistory = asyncHandler(async (req, res) => {
 
     return res
         .status(200)
-        .json(new Apiresponce(200, user[0].watchHistory, "Watch History Fetched Succefully"))
+        .json(
+            new Apiresponce
+            (
+                200,
+                user[0].watchHistory,
+                "Watch History Fetched Succefully"
+            )
+        )
 })
 
 export {
